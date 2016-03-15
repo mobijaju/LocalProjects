@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;com.dev.jabx.LocalDate.java&apos; to &apos;LocalDateAdapter.java&apos;&#x0D;&#x0A;- Original project: &apos;BuildServicesCalls&apos;&#x0D;&#x0A;- Original element: &apos;com.dev.jabx.LocalDate.java&apos;&#x0D;&#x0A;- Renamed element: &apos;com.dev.jabx.LocalDateAdapter.java&apos;" description="Rename compilation unit &apos;LocalDate.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;com.dev.jabx{LocalDate.java" name="LocalDateAdapter.java" references="false" stamp="1455071978629" version="1.0"/>
+</session>

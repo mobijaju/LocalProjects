@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MUSEUMS>
+    <MUSEUM>
+        <city>Oviedo, Spain</city>
+        <Musuem_Name>Simple Museum</Musuem_Name>
+    </MUSEUM>
+    <MUSEUM>
+        <city>Gijon, Spain</city>
+        <Musuem_Name>Another Simple Museum</Musuem_Name>
+    </MUSEUM>
+</MUSEUMS>

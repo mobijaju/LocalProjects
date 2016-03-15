@@ -1,0 +1,49 @@
+package httpRest.Rest.ID;
+
+public class LoadDataToCassandra {
+	
+	private static String pop;
+	public static String getPop() {
+		return pop;
+	}
+	public static void setPop(String pop) {
+		LoadDataToCassandra.pop = pop;
+	}
+	public static String getDate() {
+		return Date;
+	}
+	public static void setDate(String date) {
+		Date = date;
+	}
+	public static int getStateNumber() {
+		return StateNumber;
+	}
+	public static void setStateNumber(int stateNumber) {
+		StateNumber = stateNumber;
+	}
+	public static String getGeoRegion() {
+		return GeoRegion;
+	}
+	public static void setGeoRegion(String geoRegion) {
+		GeoRegion = geoRegion;
+	}
+	public static String getState() {
+		return State;
+	}
+	public static void setState(String state) {
+		State = state;
+	}
+	public static String getRegion() {
+		return Region;
+	}
+	public static void setRegion(String region) {
+		Region = region;
+	}
+	private static String Date;
+	private static int StateNumber;
+	private static String GeoRegion;
+	private static String State;
+	private static String Region;
+	
+
+}
