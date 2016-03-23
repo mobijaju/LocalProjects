@@ -1,5 +1,8 @@
 package httpRest.Rest.ID;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,25 +74,64 @@ public class httpGet {
 					JsonNode node1= mapper.readValue(data2, JsonNode.class);
 					if (node1.isArray()){
 						
+						String State;
+						String region;
+						String GeographicalRegion;
+						String Country;
+						
 						for (int index = 0; index<node1.size(); index ++){
 							int index2 = 1;
+							int count = 0;
+							
 							String GeoRegion  = node1.path(index).path(index2).textValue();
-							System.out.println(GeoRegion);
+							
+							//this is two will do thesame thing
+				        	List<String> GeoRegionList = Arrays.asList(GeoRegion.split(","));
+				        	String GeoRegionLists[] = GeoRegion.split(",");
+							//---------------------------------------------------------------
+				        	State = GeoRegionLists[0];
+							System.out.println(State);
+							count = count + 1;
+							if (count < 0 || count >= GeoRegionLists.length) {
+								
+							}
+								
+							else {
+								region = GeoRegionList.get(count);
+								System.out.println(region);		
+								count=count + 1;
+							}
+							
+    						if (GeoRegionList.size()>count) {
+    							GeographicalRegion = GeoRegionLists[count];
+    						System.out.println(GeoRegionList.get(count));
+							System.out.println(GeographicalRegion);
+							count=count + 1;
 						}
-						for (int index = 0; index<node1.size(); index ++){
-							int index2 = 0;
-							String pop  = node1.path(index).path(index2).textValue();
-							System.out.print(pop);
-						}
-						for (int index = 0; index<node1.size(); index ++){
-							int index2 = 2;
-							String date  = node1.path(index).path(index2).textValue();
-							System.out.println(date);
-						}
-						for (int index = 0; index<node1.size(); index ++){
-							int index2 = 3;
-							String state  = node1.path(index).path(index2).textValue();
-							System.out.print(state);
+    						
+    						if (GeoRegionList.size()>count) {
+    							Country =GeoRegionLists[count];
+    							System.out.println(Country);
+    							count=count + 1;
+    						}
+    						
+
+						//	System.out.println(GeoRegionList.get(3));
+//						}
+//						for (int index = 0; index<node1.size(); index ++){
+//							int index2 = 0;
+//							String pop  = node1.path(index).path(index2).textValue();
+//							System.out.print(pop);
+//						}
+//						for (int index = 0; index<node1.size(); index ++){
+//							int index2 = 2;
+//							String date  = node1.path(index).path(index2).textValue();
+//							System.out.println(date);
+//						}
+//						for (int index = 0; index<node1.size(); index ++){
+//							int index2 = 3;
+//							String state  = node1.path(index).path(index2).textValue();
+//							System.out.print(state);
 						}
 					}
 					String x  = node1.path(0).path(2).textValue();
