@@ -1,8 +1,12 @@
 package httpRest.Rest.ID;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -11,22 +15,31 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class LoadDataToCassandra {
 
+	private static Logger logger = LogManager.getLogger("LoadDataToCassandra.class");
+	private static Cluster cluster;
+	private static Session session;
+	private static String State;
+	private static String region;
+	private static String GeographicalRegion;
+	private static String Country;
+	private static String node;
 	private static String pop;
-	private static String Date;
-	private static String StateNumber;
-	private static String GeoRegion;
-	private static int State;
-	private static String Region;
-
-	// create a logger to log headers
+	private static String CountryII;
+	
 	public HttpEntity APIcall() throws ClientProtocolException, IOException {
-
+		logger.info("Start ------------------------ HttpGet");
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		{
 
@@ -38,109 +51,140 @@ public class LoadDataToCassandra {
 			HttpResponse httpResponse;
 			httpResponse = httpclient.execute(check, getRequest);
 			HttpEntity entity = httpResponse.getEntity();
+			Header[] headers = httpResponse.getAllHeaders();
+			for (int i = 0; i < headers.length; i++) {
+				logger.info(headers[i]+ "" + httpResponse.getStatusLine() +"/" +httpResponse.getAllHeaders());
+			}			
 			return entity;
-
 		}
-
+		
 	}
 
 	public JsonNode getInitDataFromAPI() throws ParseException, IOException {
 		LoadDataToCassandra getdata = new LoadDataToCassandra();
-		String data2 = EntityUtils.toString(getdata.APIcall());
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		String fullReturnedData = EntityUtils.toString(getdata.APIcall());
 		ObjectMapper mapper = new ObjectMapper();
-		@SuppressWarnings("unused")
-		JsonNode node1 = mapper.readValue(data2, JsonNode.class);
+		
+		JsonNode node1 = mapper.readValue(fullReturnedData, JsonNode.class);
+		httpclient.getConnectionManager().shutdown();
 		return node1;
 	}
+	
+//doing this was way too slow////////
+//--------------------------------------------
+	
+	/*	public PreparedStatement setCassandConnectionandLoad(){
+		node = "192.168.30.134";
+		cluster = Cluster.builder().addContactPoint(node).build();
+		session = cluster.connect("population_data");
 
-	public static String getDate() throws ParseException, IOException {
+		PreparedStatement statement = session
+				.prepare("INSERT INTO pop_by_state " + "(state, " + "region, " + "country, " + "geolocaltion, "
+						+ "pop, " + "pop_date, " + "statenumber " + ") VALUES (?, ?, ?, ?, ?, ?, ?);");
+		return statement;
+		
+	}*/
+	public static String getData() throws ParseException, IOException {
 		LoadDataToCassandra getData = new LoadDataToCassandra();
 		JsonNode node1 = getData.getInitDataFromAPI();
-		 Date = null;
+		node = "192.168.30.134";
+		cluster = Cluster.builder().addContactPoint(node).build();
+		session = cluster.connect("population_data");
 
-		if (node1.isArray()) {
+		PreparedStatement statement = session
+				.prepare("INSERT INTO pop_by_state " + "(state, " + "region, " + "country, " + "geolocaltion, "
+						+ "pop, " + "pop_date, " + "statenumber " + ") VALUES (?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement statement1 = session.prepare("SELECT state,region FROM pop_by_state");
 
-			for (int index = 0; index < node1.size(); index++) {
-				int index2 = 2;
-				Date = node1.path(index).path(index2).asText();
-				System.out.println(Date);
+		try {
+			if (node1.isArray()) {
+
+				for (int index = 0; index < node1.size(); index++) {
+					int index2 = 1;
+					int count = 0;
+
+					String GeoRegion = node1.path(index).path(index2).textValue();
+
+					// this is two will do thesame thing
+					List<String> GeoRegionList = Arrays.asList(GeoRegion.split(","));
+					String GeoRegionLists[] = GeoRegion.split(",");
+					// ---------------------------------------------------------------
+					State = GeoRegionLists[0];
+					count = count + 1;
+					if (count < 0 || count >= GeoRegionLists.length) {
+
+					}
+
+					else {
+						Country = GeoRegionList.get(count);
+
+						System.out.println(Country);
+						count = count + 1;
+					}
+
+					if (GeoRegionList.size() > count) {
+						GeographicalRegion = GeoRegionLists[count];
+						count = count + 1;
+					}
+
+					if (GeoRegionList.size() > count) {
+						region = GeoRegionLists[count];
+						count = count + 1;
+					}
+
+					if (GeoRegionList.size() > count) {
+						CountryII = GeoRegionLists[count];
+						count = count + 1;
+					}
+
+					index2 = index2 - 1;
+					pop = node1.path(index).path(index2).asText();
+
+					index2 = 3;
+					String statenumber = node1.path(index).path(index2).textValue();
+                    //---------------------------------------------------------------------------------------------
+					
+					
+					
+					
+					//=---------------------------------------------------------
+					if (region != null) {
+						java.util.Date date = new java.util.Date();
+						Timestamp timedata = new Timestamp(date.getTime());
+						BoundStatement boundStatement = new BoundStatement(statement);
+						if (pop != "POP") {
+							session.execute(boundStatement.bind(State, region, CountryII, GeographicalRegion,
+									pop, timedata, statenumber));
+						logger.debug(State +" " + region+" "+ CountryII+" "+GeographicalRegion+" "+
+									pop+" "+ timedata+" "+ statenumber);
+						
+						
+						}
+					}
+				}
+
 			}
+			  logger.info("End ------------------------ HttpGet");
+			cluster.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return Date;
-
+	//	logger.info(getData.setCassandConnectionandLoad().getOutgoingPayload());
+		return Country;
 	}
 
-	public static String getStateNumber() throws ParseException, IOException {
-		LoadDataToCassandra getData = new LoadDataToCassandra();
-		JsonNode node1 = getData.getInitDataFromAPI();
-		StateNumber = null;
 
-		if (node1.isArray()) {
-
-			for (int index = 0; index < node1.size(); index++) {
-				int index2 = 3;
-				StateNumber = node1.path(index).path(index2).asText();
-				 System.out.println(StateNumber);
-				// return(DateData);
-			}
-		}
-		return StateNumber;
-	}
-
-	public static String getpop() throws ParseException, IOException {
-		LoadDataToCassandra getData = new LoadDataToCassandra();
-		JsonNode node1 = getData.getInitDataFromAPI();
-		pop = null;
-
-		if (node1.isArray()) {
-
-			for (int index = 0; index < node1.size(); index++) {
-				int index2 = 0;
-				pop = node1.path(index).path(index2).asText();
-				System.out.println(pop);
-				// return(DateData);
-			}
-		}
-		return pop;
-
-	}
-
-	public static String getGeoRegion() throws ParseException, IOException {
-		LoadDataToCassandra getData = new LoadDataToCassandra();
-		JsonNode node1 = getData.getInitDataFromAPI();
-		GeoRegion = null;
-
-		if (node1.isArray()) {
-
-			for (int index = 0; index < node1.size(); index++) {
-				int index2 = 0;
-				GeoRegion = node1.path(index).path(index2).asText();
-			    System.out.println(GeoRegion);
-				// return(DateData);
-			}
-		}
-		return GeoRegion;
-	}
-
-	public static int getState() {
-		return State;
-	}
-
-	public static String getRegion() {
-		return Region;
-	}
 
 	public static void main(String[] args) {
 
 		LoadDataToCassandra data = new LoadDataToCassandra();
 		try {
-			String returnData = data.getDate();
+			String returnData = data.getData();
 			System.out.println(returnData);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
